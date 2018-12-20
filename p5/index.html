@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>p5.js example</title>
+    <style> body {padding: 0; margin: 0;} </style>
+    <script src="./p5.min.js"></script>
+    <script src="./addons/p5.dom.min.js"></script>
+    <script>
+        let kleur = 230;
+        let canvasW = 640;
+        let canvasH = 640;
+        let rows = 8;
+        let colums = 8;
+        let items = [];
+        let positioncenter = [];
+        let selected = [];
+        let radius = (canvasW/rows)*0.85;
+        let colors = [[237,60,33], [255,241,56], [82,255,56], [56,255,255], [99, 56, 255], [252,79,255], [132,121,116]]
+        let itemsIcolom;
+        let itemsEcolom;
+        let itemsIrij;
+        let itemsErij;
+        let score = 0;
+        let scoreStart = false;
+        let swapAmound = 20;
+        let scoreFinish = 30;
+        let gedaan = false;
+        let xGroot;
+        let xKlein;
+        let yGroot;
+        let yKlein;
+        let i1;
+        let e1;
+        let minn;
+        let plus;
+        let ontplofKleur;
+        function chooseColor(){
+            let nr = Math.floor(Math.random()*colors.length);
+            return colors[nr];
+        }
+        function isSame(a1, a2){
+
+                if(a1.length===a2.length) {
+                    for (let i = 0; i < a1.length; i++) {
+                        if (a1[i] !== a2[i]) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            return false;
+        }
+        function setup(){
+
+            createCanvas(canvasW,canvasH);
+
+            function playfield(){
+                for(let i = 0; i<rows; i++){
+                    items[i] = [];
+                    positioncenter[i] = [];
+                    for(let e=0; e<colums;e++){
+                        items[i][e] = chooseColor();
+                        positioncenter[i][e] = [];
+                        positioncenter[i][e][0] = canvasW / 16 + (canvasW / rows)* e;
+                        positioncenter[i][e][1] = canvasH / 16 + (canvasW / rows) * i;
+
+                    }
+
+                }
+                while(vijfInRijCheck())
+                {
+                    items[itemsIrij][itemsErij] = chooseColor();
+                    items[itemsIrij][itemsErij + 1] = chooseColor();
+                    items[itemsIrij][itemsErij + 2] = chooseColor();
+                    items[itemsIrij][itemsErij + 3] = chooseColor();
+                    items[itemsIrij][itemsErij + 4] = chooseColor();
+
+
+
+
+                }
+                while(vijfInColomCheck())
+                {
+                    items[itemsIcolom][itemsEcolom] = chooseColor();
+                    items[itemsIcolom + 1][itemsEcolom] = chooseColor();
+                    items[itemsIcolom + 2][itemsEcolom] = chooseColor();
+                    items[itemsIcolom + 3][itemsEcolom] = chooseColor();
+                    items[itemsIcolom + 4][itemsEcolom] = chooseColor();
+                }
+                while(vierInRijCheck())
+                {
+                    items[itemsIrij][itemsErij] = chooseColor();
+                    items[itemsIrij][itemsErij + 1] = chooseColor();
+                    items[itemsIrij][itemsErij + 2] = chooseColor();
+                    items[itemsIrij][itemsErij + 3] = chooseColor();
+
+                }
+
+                while(vierInColomCheck())
+                {
+                    items[itemsIcolom][itemsEcolom] = chooseColor();
+                    items[itemsIcolom + 1][itemsEcolom] = chooseColor();
+                    items[itemsIcolom + 2][itemsEcolom] = chooseColor();
+                    items[itemsIcolom + 3][itemsEcolom] = chooseColor();
+                }
+
+                while(drieInRijCheck())
+                {
+
+                    items[itemsIrij][itemsErij] = chooseColor();
+                    items[itemsIrij][itemsErij + 1] = chooseColor();
+                    items[itemsIrij][itemsErij + 2] = chooseColor();
+
+
+
+                }
+
+
+                while(drieInColomCheck())
+                {
+                    items[itemsIcolom][itemsEcolom] = chooseColor();
+                    items[itemsIcolom + 1][itemsEcolom] = chooseColor();
+                    items[itemsIcolom + 2][itemsEcolom] = chooseColor();
+
+
+                }
+            }
+            playfield();
+        }
+        function draw(){
+            background(kleur);
+            if(kleur <= 190)
+            {
+                plus = true;
+                minn = false;
+            }
+            if(kleur >= 230)
+            {
+                plus = false;
+                minn = true
+            }
+            colorAdd();
+
+            for(let i = 0; i<rows; i++) {
+                for (let e = 0; e < colums; e++) {
+
+                    fill(items[i][e]);
+                    ellipse( positioncenter [i][e][0],positioncenter [i][e][1], radius, radius);
+                }
+            }
+            frameRate(2);
+            if(score >= scoreFinish && gedaan === false)
+            {
+                alert("Winner winner chicken dinner");
+                window.location.replace("snake.html");
+                score = 0;
+                gedaan = true;
+            }
+            if(swapAmound < 0 && gedaan === false)
+            {
+                alert("Game over");
+                gedaan = true;
+            }
+            if(vijfInRijCheck())
+            {
+                deleteAndDrop(itemsIrij, itemsErij);
+                deleteAndDrop(itemsIrij, itemsErij + 1);
+                items[itemsIrij][itemsErij + 2] = [255];
+                deleteAndDrop(itemsIrij, itemsErij + 3);
+                deleteAndDrop(itemsIrij, itemsErij + 4);
+                score += 4;
+
+
+
+            }
+            while(vijfInColomCheck())
+            {
+                deleteAndDrop(itemsIrij, itemsErij);
+                deleteAndDrop(itemsIrij + 1, itemsErij);
+                items[itemsIrij + 2][itemsErij] = [255];
+                deleteAndDrop(itemsIrij + 3, itemsErij);
+                deleteAndDrop(itemsIrij + 4, itemsErij);
+                score += 4;
+
+            }
+            while(vierInRijCheck())
+            {
+                deleteAndDrop(itemsIrij, itemsErij);
+                deleteAndDrop(itemsIrij, itemsErij + 1);
+                deleteAndDrop(itemsIrij, itemsErij + 2);
+                deleteAndDrop(itemsIrij, itemsErij + 3);
+                if(scoreStart){score += 4;}
+
+
+
+            }
+
+            while(vierInColomCheck())
+            {
+                deleteAndDrop(itemsIrij, itemsErij);
+                deleteAndDrop(itemsIrij + 1, itemsErij);
+                deleteAndDrop(itemsIrij + 2, itemsErij);
+                deleteAndDrop(itemsIrij + 3, itemsErij);
+                if(scoreStart){score += 4;}
+            }
+            while(drieInColomCheck())
+            {
+                deleteAndDrop(itemsIrij, itemsErij);
+                deleteAndDrop(itemsIrij + 1, itemsErij);
+                deleteAndDrop(itemsIrij + 2, itemsErij);
+                if(scoreStart){score++;}
+            }
+            while(drieInRijCheck())
+            {
+                deleteAndDrop(itemsIrij, itemsErij);
+                deleteAndDrop(itemsIrij, itemsErij + 1);
+                deleteAndDrop(itemsIrij, itemsErij + 2);
+                if(scoreStart){score++;}
+            }
+            document.getElementById("d").innerHTML = score;
+            document.getElementById("rijcorectP").innerHTML = swapAmound;
+
+
+        }
+        function mousePressed() {
+            checkHit();
+        }
+
+        function checkHit(){
+            for (let i=0; i<positioncenter.length;i++){
+                for(let e=0; e<colums;e++) {
+                    var d = dist(mouseX, mouseY, positioncenter[i][e][0], positioncenter[i][e][1]);
+
+                    if (d < radius / 2) {
+                        if(selected.length ==0){
+                            selected[0] = [];
+                            selected[0][0] = i;
+                            selected[0][1] = e;
+
+                        } else{
+                            selected[1] = [];
+                            selected[1][0] = i;
+                            selected[1][1] = e;
+                            i1 = selected[0][0];
+                            e1 = selected[0][1];
+
+
+                            if(distenceCheck(positioncenter[i1][e1][0],positioncenter[i1][e1][1],positioncenter[i][e][0],positioncenter[i][e][1])) {
+                                if(isSame(items[i][e], [255])){
+                                    ontplofKleur = items[i1][e1];
+                                    ontplof();
+                                    items[i][e] = chooseColor();
+                                }else if (isSame(items[i1][e1], [255]))
+                                {
+                                    ontplofKleur = items[i][e];
+                                    ontplof();
+                                    items[i1][e1] = chooseColor();
+
+                                }
+
+                                else {
+                                    swap();
+                                }
+                            }
+
+
+                        }
+
+                    }
+                }
+            }
+        }
+        function vijfInRijCheck() {
+
+            for (let i = 0; i < rows; i++) {
+                for (let e = 0; e < colums - 3; e++) {
+                    if (isSame(items[i][e], items[i][e + 1]) && isSame(items[i][e], items[i][e + 2]) && isSame(items[i][e], items[i][e + 3]) &&isSame(items[i][e], items[i][e + 4])) {
+                        itemsIrij = i;
+                        itemsErij = e;
+
+                        return true;
+                    }
+
+                }
+
+            }
+            return false;
+        }
+        function vierInRijCheck() {
+
+            for (let i = 0; i < rows; i++) {
+                for (let e = 0; e < colums - 3; e++) {
+                    if (isSame(items[i][e], items[i][e + 1]) && isSame(items[i][e], items[i][e + 2]) && isSame(items[i][e], items[i][e + 3])) {
+                        itemsIrij = i;
+                        itemsErij = e;
+
+                        return true;
+                    }
+
+
+                }
+
+            }
+            return false;
+        }
+
+        function vijfInColomCheck() {
+            for (let e = 0; e < colums; e++) {
+                for (let i = 0; i < rows - 4; i++) {
+                    if (isSame(items[i][e], items[i + 1][e]) && isSame(items[i][e], items[i + 2][e]) && isSame(items[i][e], items[i + 3][e]) && isSame(items[i][e], items[i + 4][e])) {
+                        itemsIcolom = i;
+                        itemsEcolom = e;
+
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        function vierInColomCheck() {
+            for (let e = 0; e < colums; e++) {
+                for (let i = 0; i < rows - 3; i++) {
+                    if (isSame(items[i][e], items[i + 1][e]) && isSame(items[i][e], items[i + 2][e]) && isSame(items[i][e], items[i + 3][e])) {
+                        itemsIcolom = i;
+                        itemsEcolom = e;
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        function drieInRijCheck()
+        {
+
+            for(let i = 0; i < rows; i++) {
+                for (let e = 0; e < colums - 2; e++) {
+                    if(isSame(items[i][e],items[i][e+1]) && isSame(items[i][e], items[i][e + 2]))
+                    {
+                        itemsIrij = i;
+                        itemsErij = e;
+
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function drieInColomCheck()
+        {
+
+            for(let e = 0; e < rows; e++) {
+                for (let i = 0; i < colums - 2; i++) {
+                    if(isSame(items[i][e],items[i+1][e]) && isSame(items[i][e], items[i+2][e]))
+                    {
+                        itemsIrij = i;
+                        itemsErij = e;
+
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+
+
+
+        function swap()
+        {
+
+
+            let i1 = selected[0][0];
+            let e1 = selected[0][1];
+            let i2 = selected[1][0];
+            let e2 = selected[1][1];
+
+            let colorVan = items[i1][e1];
+            items[i1][e1] = items[i2][e2];
+            items[i2][e2] = colorVan;
+            scoreStart = true;
+            if(!(drieInRijCheck() || drieInColomCheck())){
+            let colorVan = items[i1][e1];
+            items[i1][e1] = items[i2][e2];
+            items[i2][e2] = colorVan;
+            scoreStart = true;
+        }
+            swapAmound--;
+
+            selected = [];
+            drieInRijCheck();
+            drieInColomCheck();
+
+
+        }
+        function distenceCheck(i1, e1, i2, e2)
+        {
+            xGroot = Math.max(i1, i2);
+            xKlein = Math.min(i1, i2);
+            yGroot = Math.max(e1, e2);
+            yKlein = Math.min(e1, e2);
+            if(((xGroot - xKlein) + (yGroot - yKlein)) === 80)
+            {
+
+                return true;
+            }
+            return false;
+        }
+        function wisselNaarBoven(i, e)
+        {
+            colorVan = items[i][e];
+            items[i][e] = items[i - 1][e];
+
+            items[i - 1][e] = colorVan;
+
+        }
+
+
+        function deleteAndDrop(i,e)
+        {
+
+            while(i !== 0)
+            {
+                wisselNaarBoven(i, e);
+                i--;
+
+            }
+            items[0][e] = chooseColor();
+        }
+        function ontplof()
+        {
+            for(let i = 0; i<rows; i++)
+            {
+                for(let e=0; e<colums;e++)
+                {
+                    if(isSame(items[i][e], ontplofKleur))
+                    {
+                        items[i][e] = chooseColor();
+                        score++;
+                    }
+                }
+            }
+
+        }
+        function colorAdd()
+        {
+            if(plus)
+            {
+                kleur += 3;
+            }
+            if(minn)
+            {
+                kleur -= 3;
+            }
+        }
+
+
+        //onclick in of uit cirkel -> check
+
+
+    </script>
+</head>
+<body>
+
+<p>De eerste stap van het spel is om op opnieuw te blijven drukken tot u vanonder het speelveld ziet</p>
+<button onclick="location.reload();">Probeer opnieuw</button>
+<p>Probeer 30 punten te halen in 20 zetten om naar level 2 te gaan.</p>
+<p id="d"></p>
+<p id="d1"></p>
+<p id="d2"></p>
+<p id="d3"></p><p></p><p id="d4"></p>
+<p id="rijcorectP"></p>
+<p id="colomcorectP"></p>
+</body>
+</html>

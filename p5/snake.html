@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>p5.js example</title>
+    <style> body {padding: 0; margin: 0;} </style>
+    <script src="./p5.min.js"></script>
+    <script src="./addons/p5.dom.min.js"></script>
+    <script>
+        let s;
+        let scl = 20;
+        let food;
+        let score = 0;
+        let highscore = 0;
+        let deathCounter = 0;
+        let u;
+        let o;
+        let l = 0;
+        let m = 0;
+        let vorige;
+        let nieuwe;
+        let vorigeY;
+        let nieuweY;
+        function setup()
+        {
+            createCanvas(600,600);
+             s = new Snake();
+            pickLocation();
+
+        }
+        function pickLocation()
+        {
+            let cols = floor(width/scl);
+            let rows = floor(height/scl);
+            u = floor(random(cols));
+            if(u < 3)
+            {
+                u += 1;
+            }else if(u > cols - 3)
+            {
+                u -= 1;
+            }
+            o = floor(random(rows));
+            if(o < 3)
+            {
+                o += 1;
+            }else if(o > cols - 3)
+            {
+                o -= 1;
+            }
+            food = createVector(u, o);
+            food.mult(scl);
+
+        }
+        function draw()
+        {
+            moveFood();
+            frameRate(10);
+            background(51);
+            s.death();
+            s.update();
+
+            highscoreChecker();
+            document.getElementById("score").innerHTML = score;
+            document.getElementById("deaths").innerHTML = deathCounter;
+            document.getElementById("highscore").innerHTML = highscore;
+            s.show();
+            if(s.eat(food))
+            {
+              pickLocation();
+            }
+
+            fill(255,0,100);
+            rect(food.x, food.y, scl, scl);
+
+        }
+        function keyPressed()
+        {if(keyCode === UP_ARROW && s.yspeed !== 1)
+            {
+                s.dir(0, -1);
+            }if(keyCode === DOWN_ARROW && s.yspeed !== -1 )
+            {
+                s.dir(0, 1);
+            }
+            if(keyCode === LEFT_ARROW && s.xspeed !== 1)
+            {
+                s.dir(-1, 0);
+            }
+            if(keyCode === RIGHT_ARROW && s.xspeed !== -1)
+            {
+                s.dir(1,0);
+            }
+        }
+        function Snake() {
+                this.x = 0;
+                this.y = 0;
+                this.xspeed = 1;
+                this.yspeed = 0 ;
+                this.total = 0;
+                this.tail = [];
+
+                this.dir = function(x, y){
+
+                      this.xspeed = x;
+                      this.yspeed = y;
+
+                };
+
+
+                this.death = function() {
+
+                    for(let i= 0; i < this.tail.length; i++){
+                        let pos = this.tail[i];
+                        let d = dist(this.x, this.y, pos.x, pos.y);
+                        if(d === 0){
+                            if(score > 15)
+                            {
+                                window.location.replace("rick.html");
+
+                            }
+                            deathCounter++;
+                            score = 0;
+                            this.total = 0;
+                            this.tail = [];
+                            background(200,20,20);
+
+
+                        }
+                    }
+
+                };
+
+                this.update = function() {
+
+                if(this.total === this.tail.length)
+                {
+                    for(let i = 0; i < this.tail.length -1; i++)
+                    {
+                        this.tail[i] = this.tail[i+1];
+                    }
+                }
+                this.tail[this.total-1] = createVector(this.x, this.y);
+
+
+
+
+
+                    this.x = this.x + this.xspeed*scl;
+                    if(this.x > 580 && this.xspeed === 1)
+                    {
+                        this.x = -20;
+                    }if(this.x === -20 && this.xspeed === -1)
+                    {
+                        this.x = 580;
+                    }
+                    if(this.y === 580 && this.yspeed === 1)
+                    {
+                        this.y = -20;
+                    }else if(this.y === 0 && this.yspeed === -1)
+                    {
+                        this.y = 600;
+                    }
+                        document.getElementById("tester").innerHTML = this.y;
+                    this.y = this.y + this.yspeed*scl;
+
+                    this.x = constrain(this.x, 0, width-scl);
+                    this.y = constrain(this.y, 0, height-scl);
+
+
+
+                };
+
+
+                this.show = function(){
+                    fill(255);
+                    for(let i = 0; i <this.tail.length; i++)
+                    {
+                        rect(this.tail[i].x, this.tail[i].y, scl, scl);
+
+                    }
+                    rect(this.x, this.y, scl, scl);
+
+
+                };
+                this.eat = function(pos){
+                    let d = dist(this.x, this.y, pos.x, pos.y);
+                    if(d === 0)
+                    {
+                        this.total++;
+                        score++;
+                        l = 0;
+                        m = 0;
+                        return true;
+                    }
+                    return false;
+                };
+        }
+        function highscoreChecker() {
+            if(score > highscore)
+            {
+                highscore = score;
+            }
+        }
+        function moveFood()
+        {
+            let b = Math.floor(Math.random()*2);
+
+            if(b === 0)
+            {
+                l+=0.1;
+            }
+            if(b === 1) {
+                l -= 0.1;
+
+            }
+            let v = Math.floor(Math.random()*2);
+            if(v === 0)
+            {
+                m+=0.1;
+            }
+            if(v === 1)
+            {
+                m-=0.1;
+            }
+            nieuwe = (u - floor(l));
+            if(nieuwe !== vorige)
+            {
+                if(l - floor(l) < 0.5)
+                {
+                    l += 0.4;
+                }
+                if(l- floor(l) > 0.5)
+                {
+                    l -= 0.4;
+                }
+            }
+            nieuweY = (o - floor(m));
+            if(nieuwe !== vorige)
+            {
+                if(m - floor(m) < 0.5)
+                {
+                    m += 0.4;
+                }
+                if(m- floor(m) > 0.5)
+                {
+                    m -= 0.4;
+                }
+            }
+
+
+            while((u + floor(l)) < 1 || (u + floor(l)) > 600 || (o + floor(m)) < 1 || (o + floor(m)) > 600)
+            {
+                pickLocation();
+            }
+            food = createVector(u + floor(l), o + floor(m));
+            food.mult(scl);
+            vorige = (u - floor(l));
+            vorigeY = (o -floor(m));
+        }
+
+    </script>
+
+</head>
+<body>
+    <p>Level 2: zorg dat je topscore boven de 15 komt voor een prachtige prijs.</p>
+    <p>Denk aan de vegans, appels leven ook.</p>
+    <p id="highscore"></p>
+    <p id="score"></p>
+    <p id="deaths"></p>
+<p id="tester"></p>
+</body>
+</html>

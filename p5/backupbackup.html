@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>p5.js example</title>
+    <style> body {padding: 0; margin: 0;} </style>
+    <script src="./p5.min.js"></script>
+    <script src="./addons/p5.dom.min.js"></script>
+    <script src="./addons/p5.sound.min.js"></script>
+    <script>
+
+
+
+
+        let canvasW = 640;
+        let canvasH = 640;
+        let rows = 8;
+        let colums = 8;
+        let items = [];
+        let z = "kk";
+        let radius = (canvasW/rows)*0.85;
+        let colors = [[237,60,33], [255,241,56], [82,255,56], [56,255,255], [99, 56, 255], [252,79,255], [195,15,255]]
+        let itemsI;
+        let itemsE;
+        let score = 0;
+        let plusI;
+        let plusE;
+
+        function chooseColor(){
+            let nr = Math.floor(Math.random()*colors.length);
+            return colors[nr];
+        }
+        function setup(){
+            createCanvas(canvasW,canvasH);
+            background(230,230,230);
+            function playfield(){
+                //document.getElementById("d").innerHTML = items[0][0];
+                for(let i = 0; i<rows; i++){
+                    items[i] = [];
+                    for(let e=0; e<colums;e++){
+                        items[i][e] = chooseColor();
+
+                    }
+                }
+            }
+            playfield();
+            checker(0);
+
+        }
+        function draw(){
+            for(let i = 0; i<rows; i++) {
+                for (let e = 0; e < colums; e++) {
+
+                    fill(items[i][e]);
+                    ellipse(canvasW / 16 + (canvasW / rows) * e, canvasH / 16 + (canvasW / rows) * i, radius, radius);
+                }
+            }
+
+
+            checker(1);
+            document.getElementById("d").innerHTML = score;
+
+        }
+
+        function checker(plus)
+        {
+            while(drieInRijCheck() || drieInColomCheck())
+            {
+                items[itemsI][itemsE] = chooseColor();
+                items[itemsI + plusI][itemsE + plusE] = chooseColor();
+                items[itemsI + 2*plusI][itemsE + 2*plusE] = chooseColor();
+                score + plus;
+            }
+        }
+
+        function drieInRijCheck()
+        {
+            for(let i = 0; i < rows; i++) {
+                for (let e = 0; e < colums - 2; e++) {
+                    if(items[i][e] === items[i][e++] && items[i][e] === items[i][e + 2])
+                    {
+                        itemsI = i;
+                        itemsE = e;
+                        plusE = 1;
+                        plusI = 0;
+                        return true;
+                    }
+                }
+            }
+        }
+        function drieInColomCheck()
+        {
+            for(let e = 0; e < rows; e++) {
+                for (let i = 0; i < colums - 2; i++) {
+                    if(items[i][e] === items[i++][e] && items[i][e] === items[i + 2][e])
+                    {
+                        itemsI = i;
+                        itemsE = e;
+                        plusE = 0;
+                        plusI = 1;
+                        return true;
+                    }
+                }
+            }
+        }
+
+
+        function swap()
+        {
+            let i1 = document.getElementById("i-1").value -1;
+            let e1 = document.getElementById("e-1").value -1;
+            let i2 = document.getElementById("i-2").value -1;
+            let e2 = document.getElementById("e-2").value -1;
+
+            let colorVan = items[i1][e1];
+            items[i1][e1] = items[i2][e2];
+            items[i2][e2] = colorVan;
+        }
+
+
+
+
+    </script>
+</head>
+<body>
+<p>Eerste kleur</p>
+<input type="number" id="i-1">Rij</input>
+<input type="number" id="e-1">Colom</input>
+<p>Tweede kleur</p>
+<input type="number" id="i-2">Rij NAAR</input>
+<input type="number" id="e-2">Colom NAAR</input>
+<br>
+<button onclick="swap()">Wissel</button>
+
+
+</body>
+
+<p id="d"></p>
+</html>
